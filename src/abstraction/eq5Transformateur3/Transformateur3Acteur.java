@@ -51,9 +51,9 @@ public abstract class Transformateur3Acteur implements IActeur {
 		
 		this.stock_min_feves_HBE = new Variable("Stock minimal de fèves haute bio équitable", this, 1000000);
 		this.stock_min_feves_moyenne = new Variable("Stock minimal de fèves de moyenne gamme", this, 1000000);
-		this.stock_min_confiserie = new Variable("Stock minimal de confiseries", this, 1000000);
-		this.stock_min_tablettes_HBE = new Variable("Stock minimal de tablettes haute bio équitable", this, 1000000);
-		this.stock_min_tablettes_moyenne = new Variable("Stock minimal de tablettes moyenne", this, 1000000);
+		this.stock_min_confiserie = new Variable("Stock minimal de confiseries", this, 5000000);
+		this.stock_min_tablettes_HBE = new Variable("Stock minimal de tablettes haute bio équitable", this, 5000000);
+		this.stock_min_tablettes_moyenne = new Variable("Stock minimal de tablettes moyenne", this, 5000000);
 	    
 		this.coefficient_transformation =  new Variable("Coefficient de transformation de fèves en chocolat (40g de fèves pour 100g de chocolat)", this, 2.5);
 		this.pourcentage_confiserie = new Variable("Pourcentage de fèves de gamme moyenne transformées en confiseries", this, 0.2);
@@ -158,13 +158,13 @@ public abstract class Transformateur3Acteur implements IActeur {
 		//Création contrat cadre pour acheter des fèves
 		SuperviseurVentesContratCadre SupCCadre1 = (SuperviseurVentesContratCadre)(Filiere.LA_FILIERE.getActeur("Sup.CCadre"));
 		feve = this.getFeves().get(Feve.FEVE_MOYENNE);
-		if(feve.getValeur()<this.stock_min_feves_moyenne.getValeur()){
+		if(this.getChocolats().get(Chocolat.TABLETTE_MOYENNE).getValeur()<this.stock_min_tablettes_moyenne.getValeur()||this.getChocolats().get(Chocolat.CONFISERIE_MOYENNE).getValeur()<this.stock_min_confiserie.getValeur()){
 			IVendeurContratCadre vendeur = null;
 			List<IVendeurContratCadre> vendeurs = SupCCadre1.getVendeurs(Feve.FEVE_MOYENNE);
 			if(vendeurs.size()>0) {
 				if (Filiere.LA_FILIERE.getEtape()<=12 || this.getListePrixNegocies(this.getContratsAchat()).size()==0) {
 					vendeur=vendeurs.get((int)( Math.random()*vendeurs.size())); //prend un vendeur aléatoirement
-					ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, ((this.stock_min_feves_moyenne.getValeur())-feve.getValeur()+1000000)/10), cryptogramme, false); 
+					ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, (this.stock_min_tablettes_moyenne.getValeur()+this.stock_min_confiserie.getValeur())/10), cryptogramme, false); 
 					if (contratCadre!=null){
 						this.JournalAchatContratCadre.ajouter("nouveau contrat cadre entre " + this + " et "+vendeur+" d'une quantité " + contratCadre.getQuantiteTotale() + "kg de " + contratCadre.getProduit() + " pendant " + contratCadre.getEcheancier() + " pour " + contratCadre.getPrix() +" euros le kilo");
 					}
@@ -176,12 +176,12 @@ public abstract class Transformateur3Acteur implements IActeur {
 					IVendeurContratCadre autreVendeur = vendeurs.get(1-indexVendeur);
 					ArrayList<IVendeurContratCadre> dixDerniersVendeurs = this.getVendeurs(10);
 					if (!dixDerniersVendeurs.contains(autreVendeur)) {
-						ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, autreVendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, ((this.stock_min_feves_moyenne.getValeur())-feve.getValeur()+1000000)/10), cryptogramme, false); 
+						ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, autreVendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, (this.stock_min_tablettes_moyenne.getValeur()+this.stock_min_confiserie.getValeur()-this.getChocolats().get(Chocolat.CONFISERIE_MOYENNE).getValeur()-this.getChocolats().get(Chocolat.TABLETTE_MOYENNE).getValeur()+10000000)/10), cryptogramme, false); 
 						if (contratCadre!=null){
 							this.JournalAchatContratCadre.ajouter("nouveau contrat cadre entre " + this + " et "+autreVendeur+" d'une quantité " + contratCadre.getQuantiteTotale() + "kg de " + contratCadre.getProduit() + " pendant " + contratCadre.getEcheancier() + " pour " + contratCadre.getPrix() +" euros le kilo");
 						}
 					} else {
-						ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, ((this.stock_min_feves_moyenne.getValeur())-feve.getValeur()+1000000)/10), cryptogramme, false); 
+						ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_MOYENNE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, (this.stock_min_tablettes_moyenne.getValeur()+this.stock_min_confiserie.getValeur()-this.getChocolats().get(Chocolat.CONFISERIE_MOYENNE).getValeur()-this.getChocolats().get(Chocolat.TABLETTE_MOYENNE).getValeur()+10000000)/10), cryptogramme, false); 
 						if (contratCadre!=null){
 							this.JournalAchatContratCadre.ajouter("nouveau contrat cadre entre " + this + " et "+vendeur+" d'une quantité " + contratCadre.getQuantiteTotale() + "kg de " + contratCadre.getProduit() + " pendant " + contratCadre.getEcheancier() + " pour " + contratCadre.getPrix() +" euros le kilo");
 						}
@@ -191,12 +191,12 @@ public abstract class Transformateur3Acteur implements IActeur {
 		}
 
 		feve=this.getFeves().get(Feve.FEVE_HAUTE_BIO_EQUITABLE);
-		if(feve.getValeur()<this.stock_min_feves_HBE.getValeur()) {
+		if(this.getChocolats().get(Chocolat.TABLETTE_HAUTE_BIO_EQUITABLE).getValeur()<this.stock_min_tablettes_HBE.getValeur()) {
 			IVendeurContratCadre vendeur = null;
 			List<IVendeurContratCadre> vendeurs = SupCCadre1.getVendeurs(Feve.FEVE_HAUTE_BIO_EQUITABLE);
-			if(vendeurs.size()>0) {
+			if(vendeurs.size()>=0) {
 				vendeur=vendeurs.get((int)( Math.random()*vendeurs.size())); //prend un vendeur aléatoirement
-				ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_HAUTE_BIO_EQUITABLE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, (this.stock_min_feves_HBE.getValeur()-feve.getValeur()+1000000)/10), cryptogramme, false);
+				ExemplaireContratCadre contratCadre = SupCCadre1.demande((IAcheteurContratCadre)this, vendeur, Feve.FEVE_HAUTE_BIO_EQUITABLE, new Echeancier(Filiere.LA_FILIERE.getEtape()+1, 10, (this.stock_min_tablettes_HBE.getValeur()-this.getChocolats().get(Chocolat.TABLETTE_HAUTE_BIO_EQUITABLE).getValeur()+10000000)/10), cryptogramme, false);
 				if (contratCadre!=null) {
 					this.JournalAchatContratCadre.ajouter(contratCadre.toString());
 				}
